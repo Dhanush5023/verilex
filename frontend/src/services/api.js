@@ -1,7 +1,11 @@
 import axios from 'axios'
 
+export const API_BASE_URL = import.meta.env.PROD 
+  ? 'https://verilex-7lhs.onrender.com/api/v1' 
+  : '/api/v1'
+
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 })
 

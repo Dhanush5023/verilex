@@ -5,7 +5,7 @@ import {
   CheckCircle, MessageSquare, ArrowLeft, Sparkles, Download, Copy, ShieldAlert 
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { documentsApi, chatApi, agentApi } from '../services/api'
+import { documentsApi, chatApi, agentApi, API_BASE_URL } from '../services/api'
 import RiskBadge, { StatusBadge } from '../components/RiskBadge'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -166,7 +166,7 @@ function DocumentDetail({ docId, onBack }) {
   const handleDownloadPDF = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/v1/agent/download/${docId}`, {
+      const response = await fetch(`${API_BASE_URL}/agent/download/${docId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error()
