@@ -1,0 +1,27 @@
+# Python environment and database files
+backend/venv/
+backend/.env
+backend/*.db
+backend/uploads/*
+backend/chroma_db/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/models/__pycache__/
+backend/app/routers/__pycache__/
+backend/app/schemas/__pycache__/
+backend/app/services/__pycache__/
+backend/app/utils/__pycache__/
+**/__pycache__/
+*.pyc
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# IDE and OS cache files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.gemini/
