@@ -39,22 +39,341 @@ export default function Register() {
     }
   }
 
-  const handleSocialRegister = (platform) => {
-    toast.loading(`Redirecting to ${platform} Authorization ...`)
-    setTimeout(() => {
-      toast.dismiss()
-      const mockUser = {
-        id: 888,
-        email: `portfolio_user@${platform.toLowerCase()}.com`,
-        username: `${platform.toLowerCase()}_user`,
-        full_name: platform + " Showcase User",
-        is_active: true,
-        created_at: new Date().toISOString()
+  useEffect(() => {
+    const handleOAuthMessage = (event) => {
+      if (event.data?.type === 'google-success' || event.data?.type === 'github-success') {
+        const { name, email } = event.data
+        const platformName = event.data.type === 'google-success' ? 'Google' : 'GitHub'
+        const mockUser = {
+          id: event.data.type === 'google-success' ? 888 : 887,
+          email: email,
+          username: email.split('@')[0],
+          full_name: name,
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+        login(`mock-jwt-${platformName.toLowerCase()}`, mockUser)
+        toast.success(`Registered and connected via ${platformName}!`)
+        navigate('/dashboard')
       }
-      login(`mock-jwt-${platform.toLowerCase()}`, mockUser)
-      toast.success(`Connected successfully via ${platform}!`)
-      navigate('/dashboard')
-    }, 1200)
+    }
+    window.addEventListener('message', handleOAuthMessage)
+    return () => window.removeEventListener('message', handleOAuthMessage)
+  }, [login, navigate])
+
+  const openGooglePopup = () => {
+    const width = 450
+    const height = 580
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    
+    const popup = window.open(
+      '',
+      'GoogleSignIn',
+      `width=${width},height=${height},left=${left},top=${top},status=no,location=no,toolbar=no,menubar=no`
+    )
+    
+    if (!popup) {
+      toast.error('Popup blocked by browser. Please allow popups.')
+      return
+    }
+    
+    popup.document.write(`
+      <html>
+        <head>
+          <title>Sign in - Google Accounts</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              background: #ffffff;
+              color: #202124;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+              margin: 0;
+              user-select: none;
+            }
+            .container {
+              width: 350px;
+              text-align: center;
+              border: 1px solid #dadce0;
+              border-radius: 8px;
+              padding: 30px 24px;
+            }
+            .logo {
+              display: inline-flex;
+              font-size: 22px;
+              font-weight: bold;
+              margin-bottom: 16px;
+            }
+            .title {
+              font-size: 22px;
+              font-weight: 400;
+              margin-bottom: 6px;
+            }
+            .subtitle {
+              font-size: 14px;
+              color: #5f6368;
+              margin-bottom: 24px;
+            }
+            .account-list {
+              display: flex;
+              flex-direction: column;
+              border-top: 1px solid #dadce0;
+              border-bottom: 1px solid #dadce0;
+              margin-bottom: 24px;
+            }
+            .account-item {
+              display: flex;
+              align-items: center;
+              padding: 12px 6px;
+              cursor: pointer;
+              border-bottom: 1px solid #f1f3f4;
+              transition: background 0.15s;
+            }
+            .account-item:last-child {
+              border-bottom: none;
+            }
+            .account-item:hover {
+              background: #f8f9fa;
+            }
+            .avatar {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              background: #e8f0fe;
+              color: #1a73e8;
+              font-weight: bold;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+              font-size: 14px;
+            }
+            .info {
+              text-align: left;
+            }
+            .name {
+              font-size: 13.5px;
+              font-weight: 500;
+              color: #3c4043;
+            }
+            .email {
+              font-size: 11.5px;
+              color: #5f6368;
+            }
+            .footer {
+              font-size: 12px;
+              color: #5f6368;
+              line-height: 1.4;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <span style="color:#4285F4">G</span>
+              <span style="color:#EA4335">o</span>
+              <span style="color:#FBBC05">o</span>
+              <span style="color:#4285F4">g</span>
+              <span style="color:#34A853">l</span>
+              <span style="color:#EA4335">e</span>
+            </div>
+            <div class="title">Choose an account</div>
+            <div class="subtitle">to continue to VeriLex</div>
+            
+            <div class="account-list">
+              <div class="account-item" onclick="select('Dhanush Kumar', 'dhanush5023@gmail.com')">
+                <div class="avatar">D</div>
+                <div class="info">
+                  <div class="name">Dhanush Kumar</div>
+                  <div class="email">dhanush5023@gmail.com</div>
+                </div>
+              </div>
+              <div class="account-item" onclick="select('Guest Reviewer', 'guest.reviewer@gmail.com')">
+                <div class="avatar" style="background:#e6fffa; color:#0d9488;">G</div>
+                <div class="info">
+                  <div class="name">Guest Reviewer</div>
+                  <div class="email">guest.reviewer@gmail.com</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="footer">
+              Google will share your name and email address with VeriLex.
+            </div>
+          </div>
+
+          <script>
+            function select(name, email) {
+              window.opener.postMessage({ type: 'google-success', name, email }, '*');
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `)
+  }
+
+  const openGithubPopup = () => {
+    const width = 500
+    const height = 620
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    
+    const popup = window.open(
+      '',
+      'GitHubSignIn',
+      `width=${width},height=${height},left=${left},top=${top},status=no,location=no,toolbar=no,menubar=no`
+    )
+    
+    if (!popup) {
+      toast.error('Popup blocked by browser. Please allow popups.')
+      return
+    }
+    
+    popup.document.write(`
+      <html>
+        <head>
+          <title>Authorize VeriLex - GitHub</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+              background: #0d1117;
+              color: #c9d1d9;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+              margin: 0;
+              user-select: none;
+            }
+            .container {
+              width: 380px;
+              background: #161b22;
+              border: 1px solid #30363d;
+              border-radius: 6px;
+              padding: 24px;
+              text-align: center;
+            }
+            .logo {
+              margin-bottom: 20px;
+              color: #ffffff;
+            }
+            .title {
+              font-size: 18px;
+              font-weight: 500;
+              margin-bottom: 8px;
+              color: #ffffff;
+            }
+            .auth-grid {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 16px;
+              margin: 20px 0;
+            }
+            .avatar-box {
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              background: #30363d;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              font-size: 16px;
+            }
+            .line {
+              height: 2px;
+              width: 30px;
+              background: #30363d;
+            }
+            .btn-authorize {
+              background: #238636;
+              color: #ffffff;
+              border: 1px solid rgba(240,246,252,0.1);
+              border-radius: 6px;
+              padding: 10px 16px;
+              font-size: 14px;
+              font-weight: 500;
+              cursor: pointer;
+              width: 100%;
+              margin-bottom: 12px;
+            }
+            .btn-authorize:hover {
+              background: #2ea043;
+            }
+            .btn-cancel {
+              background: transparent;
+              color: #8b949e;
+              border: none;
+              cursor: pointer;
+              font-size: 12px;
+            }
+            .btn-cancel:hover {
+              color: #58a6ff;
+            }
+            .perms {
+              text-align: left;
+              font-size: 12px;
+              color: #8b949e;
+              background: #0d1117;
+              padding: 12px;
+              border: 1px solid #30363d;
+              border-radius: 6px;
+              margin-bottom: 20px;
+              line-height: 1.5;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <svg height="40" viewBox="0 0 16 16" version="1.1" width="40" fill="currentColor"><path d="M8 0c-4.42 0-8 3.58-8 8 0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+            </div>
+            <div class="title">Authorize VeriLex</div>
+            
+            <div class="auth-grid">
+              <div class="avatar-box">V</div>
+              <div class="line"></div>
+              <div class="avatar-box" style="background:#58a6ff; color:#0d1117;">U</div>
+            </div>
+            
+            <div class="perms">
+              <strong>VeriLex</strong> requests access to:
+              <ul style="margin: 6px 0 0 14px; padding: 0;">
+                <li>Read access to public profile</li>
+                <li>Read access to email address</li>
+              </ul>
+            </div>
+            
+            <button class="btn-authorize" onclick="authorize('Dhanush Kumar GitHub', 'dhanush.github@gmail.com')">
+              Authorize Dhanush5023
+            </button>
+            <div>
+              <button class="btn-cancel" onclick="window.close()">Cancel</button>
+            </div>
+          </div>
+
+          <script>
+            function authorize(name, email) {
+              window.opener.postMessage({ type: 'github-success', name, email }, '*');
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `)
+  }
+
+  const handleSocialRegister = (platform) => {
+    if (platform === 'Google') {
+      openGooglePopup()
+    } else {
+      openGithubPopup()
+    }
   }
 
   return (
