@@ -63,6 +63,9 @@ async def process_document_background(document_id: int, file_path: str, file_typ
         doc.risk_level = analysis.get("risk_level", "MEDIUM")
         doc.flagged_clauses = analysis.get("flagged_clauses", [])
         doc.key_terms = analysis.get("key_terms", [])
+        doc.important_dates = analysis.get("important_dates", [])
+        doc.missing_information = analysis.get("missing_information", [])
+        doc.suggestions = analysis.get("suggestions", [])
         doc.document_type = analysis.get("document_type", "other")
         doc.chroma_collection_id = collection_name
         doc.chunk_count = count

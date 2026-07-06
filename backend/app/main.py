@@ -4,18 +4,18 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import create_tables
-from app.routers import auth, documents, chat, complaints, scam, agent
+from app.routers import auth, documents, chat, complaints, scam, agent, tools
 import os
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    print("🚀 VeriLex API starting up...")
+    print("[STARTUP] VeriLex API starting up...")
     create_tables()
-    print("✅ Database tables created/verified.")
+    print("[STARTUP] Database tables created/verified.")
     yield
-    print("🛑 VeriLex API shutting down.")
+    print("[SHUTDOWN] VeriLex API shutting down.")
 
 
 app = FastAPI(
@@ -55,6 +55,7 @@ app.include_router(chat.router, prefix="/api/v1")
 app.include_router(complaints.router, prefix="/api/v1")
 app.include_router(scam.router, prefix="/api/v1")
 app.include_router(agent.router, prefix="/api/v1")
+app.include_router(tools.router, prefix="/api/v1")
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────

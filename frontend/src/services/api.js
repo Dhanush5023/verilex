@@ -83,3 +83,11 @@ export const agentApi = {
   downloadReportUrl: (docId) => `/api/v1/agent/download/${docId}`,
 }
 
+// ─── AI Legal Tools ─────────────────────────────────────────────────────────
+export const toolsApi = {
+  summarize: (data) => api.post('/tools/summarize', data),
+  notice: (data) => api.post('/tools/notice', data),
+  ipcBns: (data) => api.post('/tools/ipc-bns', data),
+  translate: (data) => api.post('/tools/translate', data),
+}
+

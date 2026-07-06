@@ -22,6 +22,9 @@ class Document(Base):
     risk_level = Column(String(20), nullable=True)  # LOW, MEDIUM, HIGH, CRITICAL
     flagged_clauses = Column(JSON, nullable=True)  # List of {clause, reason, severity}
     key_terms = Column(JSON, nullable=True)  # List of important extracted terms
+    important_dates = Column(JSON, nullable=True)  # List of {date, event, description}
+    missing_information = Column(JSON, nullable=True)  # List of missing clause strings
+    suggestions = Column(JSON, nullable=True)  # List of improvement suggestions
     document_type = Column(String(100), nullable=True)  # rental, loan, employment, insurance
     agent_report = Column(JSON, nullable=True)  # Detailed AI Legal Agent audit report
     

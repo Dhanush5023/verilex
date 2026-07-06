@@ -55,6 +55,9 @@ class DocumentResponse(BaseModel):
     risk_level: Optional[str]
     flagged_clauses: Optional[List[FlaggedClause]]
     key_terms: Optional[List[str]]
+    important_dates: Optional[List[Any]]
+    missing_information: Optional[List[str]]
+    suggestions: Optional[List[str]]
     document_type: Optional[str]
     chunk_count: int
     created_at: datetime
@@ -181,3 +184,53 @@ class AgentReportResponse(BaseModel):
     relevant_laws: List[AgentLawRef]
     complaint_template: str
 
+
+# ─── Tools Schemas ────────────────────────────────────────────────────────────
+
+class SummarizeRequest(BaseModel):
+    text: str
+    summary_type: Optional[str] = "case"
+
+class SummarizeResponse(BaseModel):
+    summary: str
+    key_points: List[str]
+    parties_involved: Optional[List[str]] = []
+    outcome: Optional[str] = None
+    applicable_laws: Optional[List[str]] = []
+
+class NoticeRequest(BaseModel):
+    notice_type: str
+    facts: str
+    sender_name: str
+    recipient_name: str
+    demands: str
+
+class NoticeResponse(BaseModel):
+    notice_text: str
+    subject: str
+    legal_basis: List[str]
+
+class IpcBnsRequest(BaseModel):
+    query: str
+
+class IpcBnsSection(BaseModel):
+    section: str
+    act: str
+    title: str
+    description: str
+    punishment: Optional[str] = None
+
+class IpcBnsResponse(BaseModel):
+    sections: List[IpcBnsSection]
+    summary: str
+
+class TranslateRequest(BaseModel):
+    text: str
+    target_language: str
+    document_type: Optional[str] = "legal document"
+
+class TranslateResponse(BaseModel):
+    translated_text: str
+    source_language: str
+    target_language: str
+    notes: Optional[str] = None

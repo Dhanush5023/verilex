@@ -9,7 +9,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import DocumentAnalysis from './pages/DocumentAnalysis'
 import ComplaintDrafter from './pages/ComplaintDrafter'
-import ScamDetector from './pages/ScamDetector'
+import LegalTools from './pages/LegalTools'
 import LegalChat from './pages/LegalChat'
 
 // ─── Protected Route Wrapper ─────────────────────────────────────────────────
@@ -67,9 +67,9 @@ function AppRoutes() {
           <AppLayout><ComplaintDrafter /></AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/scam" element={
+      <Route path="/tools" element={
         <ProtectedRoute>
-          <AppLayout><ScamDetector /></AppLayout>
+          <AppLayout><LegalTools /></AppLayout>
         </ProtectedRoute>
       } />
       <Route path="/chat" element={
@@ -98,18 +98,18 @@ export default function App() {
           position="top-right"
           toastOptions={{
             style: {
-              background: 'var(--bg-card)',
+              background: 'var(--bg-elevated)',
               color: 'var(--text-primary)',
               border: '1px solid var(--border-default)',
               borderRadius: '10px',
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: 'Plus Jakarta Sans, sans-serif',
               fontSize: '14px',
             },
             success: {
-              iconTheme: { primary: '#22c55e', secondary: '#0a0a0f' },
+              iconTheme: { primary: '#10b981', secondary: '#030308' },
             },
             error: {
-              iconTheme: { primary: '#ef4444', secondary: '#0a0a0f' },
+              iconTheme: { primary: '#ef4444', secondary: '#030308' },
             },
           }}
         />

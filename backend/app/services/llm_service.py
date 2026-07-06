@@ -73,6 +73,9 @@ Analyze for:
 3. Risk score (0.0-10.0) and risk level (LOW/MEDIUM/HIGH/CRITICAL)
 4. Flagged clauses — unfair, hidden, or risky terms
 5. Key terms — important dates, amounts, parties, obligations
+6. Important dates — deadlines, expiry dates, notice periods extracted from document
+7. Missing information — critical clauses that should be present but are absent
+8. Suggestions — specific improvements the user should negotiate or request
 
 Return exactly this JSON structure:
 {
@@ -83,7 +86,18 @@ Return exactly this JSON structure:
   "flagged_clauses": [
     {"clause": "exact text or paraphrase", "reason": "why it's risky", "severity": "LOW|MEDIUM|HIGH"}
   ],
-  "key_terms": ["term1", "term2", "..."]
+  "key_terms": ["term1", "term2"],
+  "important_dates": [
+    {"date": "DD/MM/YYYY or relative", "event": "Event name", "description": "What happens on this date"}
+  ],
+  "missing_information": [
+    "Dispute resolution mechanism is not mentioned",
+    "Security deposit refund timeline is absent"
+  ],
+  "suggestions": [
+    "Request a mutual termination clause",
+    "Negotiate a cap on liability to 3 months rent"
+  ]
 }"""
 
 
@@ -222,3 +236,119 @@ def answer_legal_question(question: str, context_chunks: list) -> str:
         user_message=user_msg,
         temperature=0.3,
     )
+
+
+# ─── Module 5: Case Summarizer ──────────────────────────────────────────────────
+
+CASE_SUMMARY_SYSTEM = """You are VeriLex's Case Summarizer. Analyze case descriptions, FIR reports, court orders, or legal disputes and return a structured JSON summary.
+
+Return ONLY this JSON:
+{
+  "summary": "Concise plain-English overview of the case",
+  "key_points": ["Point 1", "Point 2", "Point 3"],
+  "parties_involved": ["Complainant: Name/Description", "Respondent: Name/Description"],
+  "outcome": "Current status or likely outcome based on facts",
+  "applicable_laws": ["Consumer Protection Act 2019", "IPC Section 420"]
+}"""
+
+def summarize_case(text: str) -> dict:
+    """Summarize a legal case or FIR or court order."""
+    truncated = text[:5000] if len(text) > 5000 else text
+    response = chat_completion(
+        system_prompt=CASE_SUMMARY_SYSTEM,
+        user_message=f"Summarize this case:\n\n{truncated}",
+        temperature=0.2,
+    )
+    result = extract_json_from_response(response)
+    result.setdefault("summary", response[:500])
+    result.setdefault("key_points", [])
+    result.setdefault("parties_involved", [])
+    result.setdefault("outcome", "Unable to determine outcome from provided information.")
+    result.setdefault("applicable_laws", [])
+    return result
+
+
+# ─── Module 6: Legal Notice Generator ──────────────────────────────────────
+
+NOTICE_SYSTEM = """You are VeriLex's Legal Notice Generator. Draft formal legal notices under Indian law.
+
+Return ONLY this JSON:
+{
+  "subject": "RE: Legal Notice for [Issue]",
+  "notice_text": "Full formal legal notice text with proper legal language",
+  "legal_basis": ["Consumer Protection Act 2019, Section 35", "Indian Contract Act 1872, Section 73"]
+}"""
+
+def generate_notice(notice_type: str, facts: str, sender_name: str, recipient_name: str, demands: str) -> dict:
+    """Generate a formal legal notice."""
+    user_msg = f"""Notice Type: {notice_type}\nSender: {sender_name}\nRecipient: {recipient_name}\nFacts: {facts}\nDemands: {demands}\n\nDraft a formal legal notice."""
+    response = chat_completion(
+        system_prompt=NOTICE_SYSTEM,
+        user_message=user_msg,
+        temperature=0.3,
+    )
+    result = extract_json_from_response(response)
+    result.setdefault("subject", f"Legal Notice — {notice_type}")
+    result.setdefault("notice_text", response)
+    result.setdefault("legal_basis", [])
+    return result
+
+
+# ─── Module 7: IPC/BNS Section Finder ──────────────────────────────────────
+
+IPC_BNS_SYSTEM = """You are VeriLex's IPC/BNS Section Finder. Given a crime or legal situation, identify applicable sections from Indian Penal Code (IPC) and Bharatiya Nyaya Sanhita (BNS 2023).
+
+Return ONLY this JSON:
+{
+  "sections": [
+    {
+      "section": "Section 420",
+      "act": "IPC",
+      "title": "Cheating and dishonestly inducing delivery of property",
+      "description": "Whoever cheats and thereby dishonestly induces...",
+      "punishment": "Imprisonment up to 7 years and fine"
+    }
+  ],
+  "summary": "Brief explanation of which laws apply and why"
+}"""
+
+def find_ipc_bns(query: str) -> dict:
+    """Find applicable IPC/BNS sections for a given crime or situation."""
+    response = chat_completion(
+        system_prompt=IPC_BNS_SYSTEM,
+        user_message=f"Find applicable IPC/BNS sections for: {query}",
+        temperature=0.2,
+    )
+    result = extract_json_from_response(response)
+    result.setdefault("sections", [])
+    result.setdefault("summary", response[:500])
+    return result
+
+
+# ─── Module 8: Legal Document Translator ──────────────────────────────────
+
+TRANSLATE_SYSTEM = """You are VeriLex's Legal Document Translator. Translate legal documents from English to Indian regional languages while preserving legal terminology accuracy.
+
+Return ONLY this JSON:
+{
+  "translated_text": "Full translation in target language",
+  "source_language": "English",
+  "target_language": "Hindi",
+  "notes": "Any important translator notes about terminology"
+}"""
+
+def translate_document(text: str, target_language: str, document_type: str = "legal document") -> dict:
+    """Translate a legal document to an Indian regional language."""
+    truncated = text[:4000] if len(text) > 4000 else text
+    user_msg = f"Translate this {document_type} to {target_language}:\n\n{truncated}"
+    response = chat_completion(
+        system_prompt=TRANSLATE_SYSTEM,
+        user_message=user_msg,
+        temperature=0.1,
+    )
+    result = extract_json_from_response(response)
+    result.setdefault("translated_text", response)
+    result.setdefault("source_language", "English")
+    result.setdefault("target_language", target_language)
+    result.setdefault("notes", None)
+    return result
